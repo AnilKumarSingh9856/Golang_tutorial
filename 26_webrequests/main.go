@@ -4,30 +4,96 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
-const url = "https://leetcode.com/u/Anil_kumar_Singh/"
 
 func main() {
-	fmt.Println("LCO web request")
-	 
-	response, err := http.Get(url)
+	fmt.Println("Welcome back to handle Get request")
 
+	// PerformGetRequest()
+	// PerformPostRequest()
+	PerformPostFormRequest()
+}
+
+func PerformGetRequest(){
+	const myurl = "http://localhost:8000/get"
+
+	response, err := http.Get(myurl)
+	if err != nil {
+		panic(err)
+	}
+
+	defer response.Body.Close()
+
+	fmt.Println("Status code: ", response.StatusCode)
+	fmt.Println("Content length is: ", response.ContentLength)
+
+	// content, err := io.ReadAll(response.Body)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// // // 1st way
+	// // fmt.Println(content)
+	// // fmt.Println(string(content))
+
+
+	// 2nd way
+	var responseString strings.Builder
+	content2, err := io.ReadAll(response.Body)
 	if err != nil{
 		panic(err)
 	}
 
-	fmt.Printf("Response is of type: %T\n", response)
-	defer response.Body.Close() // caller's responsibility to close the connection
+	byteCount, _ := responseString.Write(content2)
 
-	// datatypes, err := ioutil.ReadAll(response.Body)
-	datatypes, err := io.ReadAll(response.Body)
+	fmt.Println("Byte count is: ", byteCount)
+	fmt.Println(responseString.String())
+}
 
-	if err != nil {
+
+func PerformPostRequest(){
+	const myurl = "http://localhost:8000/post"
+
+	// fake json payload
+
+	requestBody := strings.NewReader(`
+		{
+		"coursename": "Let's go with golang",
+		"price": 0,
+		"plateform": "learnCodeOnline"
+		}
+	`)
+
+	response, err := http.Post(myurl, "application/json", requestBody)
+	if err !=nil {
 		panic(err)
 	}
-	content := string(datatypes)
-	fmt.Println(content)
 
+	defer response.Body.Close()
 
+	content, _ := io.ReadAll(response.Body)
+	fmt.Println(string(content))
+}
+
+func PerformPostFormRequest(){
+	const myurl = "http://localhost:8000/postform"
+
+	// formdata
+
+	data := url.Values{}
+
+	data.Add("firstname", "Anil")
+	data.Add("middlename", "Kumar")
+	data.Add("lastname", "Singh")
+
+	response, err := http.PostForm(myurl, data)
+	if err !=nil {
+		panic(err)
+	}
+
+	content, _ := io.ReadAll(response.Body)
+	fmt.Println(string(content))
 }
